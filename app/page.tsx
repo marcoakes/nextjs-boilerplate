@@ -1,35 +1,58 @@
-import React from "react";
+// app/page.tsx
+import * as React from "react";
 
-// ---------- Helper UI Primitives (no external deps) ----------
-const Card = ({ children, className = "" }) => (
-  <div className={`rounded-2xl bg-white/70 dark:bg-zinc-900/60 border border-zinc-200/70 dark:border-zinc-800 shadow-sm backdrop-blur p-5 ${className}`}>
+// ---------- Types ----------
+type CardProps = { children: React.ReactNode; className?: string };
+type PillProps = { icon: React.ReactNode; label: string };
+type KPIProps = {
+  icon: React.ReactNode;
+  title: string;
+  value: React.ReactNode;
+  tone?: "default" | "green" | "amber" | "blue" | "indigo";
+};
+type SegBarSegment = { label: string; value: number; className?: string };
+type SegmentedBarProps = { segments: SegBarSegment[]; height?: number };
+type LegendItem = { label: string; className?: string; aux?: string };
+type MiniLegendProps = { items: LegendItem[] };
+
+// ---------- Helper UI Primitives ----------
+const Card: React.FC<CardProps> = ({ children, className = "" }) => (
+  <div
+    className={`rounded-2xl bg-white/70 dark:bg-zinc-900/60 border border-zinc-200/70 dark:border-zinc-800 shadow-sm backdrop-blur p-5 ${className}`}
+  >
     {children}
   </div>
 );
 
-const Pill = ({ icon, label }) => (
+const Pill: React.FC<PillProps> = ({ icon, label }) => (
   <div className="flex items-center gap-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 shadow-sm">
     <div className="grid place-items-center w-10 h-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-100">
       {icon}
     </div>
     <div className="flex flex-col leading-tight">
       <span className="text-xs text-zinc-500">{label}</span>
-      <span className="text-2xl font-semibold tracking-tight">{typeof icon === 'number' ? icon.toLocaleString() : null}</span>
     </div>
   </div>
 );
 
-const KPI = ({ icon, title, value, tone = "default" }) => {
-  const toneClasses = {
-    default: "",
-    green: "ring-1 ring-green-100 bg-green-50/60 dark:ring-green-900/30 dark:bg-green-900/20",
-    amber: "ring-1 ring-amber-100 bg-amber-50/60 dark:ring-amber-900/30 dark:bg-amber-900/20",
-    blue: "ring-1 ring-blue-100 bg-blue-50/60 dark:ring-blue-900/30 dark:bg-blue-900/20",
-    indigo: "ring-1 ring-indigo-100 bg-indigo-50/60 dark:ring-indigo-900/30 dark:bg-indigo-900/20",
-  }[tone];
+const KPI: React.FC<KPIProps> = ({ icon, title, value, tone = "default" }) => {
+  const toneClasses =
+    {
+      default: "",
+      green:
+        "ring-1 ring-green-100 bg-green-50/60 dark:ring-green-900/30 dark:bg-green-900/20",
+      amber:
+        "ring-1 ring-amber-100 bg-amber-50/60 dark:ring-amber-900/30 dark:bg-amber-900/20",
+      blue:
+        "ring-1 ring-blue-100 bg-blue-50/60 dark:ring-blue-900/30 dark:bg-blue-900/20",
+      indigo:
+        "ring-1 ring-indigo-100 bg-indigo-50/60 dark:ring-indigo-900/30 dark:bg-indigo-900/20",
+    }[tone] ?? "";
 
   return (
-    <div className={`flex items-center gap-4 rounded-2xl border border-zinc-200/70 dark:border-zinc-800 bg-white/70 dark:bg-zinc-900/60 px-5 py-4 shadow-sm ${toneClasses}`}>
+    <div
+      className={`flex items-center gap-4 rounded-2xl border border-zinc-200/70 dark:border-zinc-800 bg-white/70 dark:bg-zinc-900/60 px-5 py-4 shadow-sm ${toneClasses}`}
+    >
       <div className="grid place-items-center w-12 h-12 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 shadow-sm text-zinc-700 dark:text-zinc-200">
         {icon}
       </div>
@@ -41,30 +64,31 @@ const KPI = ({ icon, title, value, tone = "default" }) => {
   );
 };
 
-const SegmentedBar = ({ segments, height = 12 }) => {
-  return (
-    <div className="w-full rounded-full overflow-hidden border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-800" style={{ height }}>
-      <div className="flex w-full h-full">
-        {segments.map((s, i) => (
-          <div
-            key={i}
-            title={`${s.label}: ${s.value}%`}
-            style={{ width: `${s.value}%` }}
-            className={`h-full ${(s.className ?? "")} transition-all`}
-          />
-        ))}
-      </div>
+const SegmentedBar: React.FC<SegmentedBarProps> = ({ segments, height = 12 }) => (
+  <div
+    className="w-full rounded-full overflow-hidden border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-800"
+    style={{ height }}
+  >
+    <div className="flex w-full h-full">
+      {segments.map((s, i) => (
+        <div
+          key={i}
+          title={`${s.label}: ${s.value}%`}
+          style={{ width: `${s.value}%` }}
+          className={`h-full ${s.className ?? ""} transition-all`}
+        />
+      ))}
     </div>
-  );
-};
+  </div>
+);
 
-const MiniLegend = ({ items }) => (
+const MiniLegend: React.FC<MiniLegendProps> = ({ items }) => (
   <div className="flex flex-wrap gap-4 mt-3">
     {items.map((it, i) => (
       <div key={i} className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-300">
-        <span className={`inline-block w-3 h-3 rounded-sm ${it.className}`} />
+        <span className={`inline-block w-3 h-3 rounded-sm ${it.className ?? ""}`} />
         <span className="font-medium">{it.label}</span>
-        <span className="text-zinc-400">{it.aux}</span>
+        {it.aux ? <span className="text-zinc-400">{it.aux}</span> : null}
       </div>
     ))}
   </div>
@@ -84,8 +108,8 @@ const data = {
   },
 };
 
-// ---------- Dashboard ----------
-export default function QADashboard() {
+// ---------- Page ----------
+export default function Page() {
   const coverage = data.avgCoverage;
   const b = data.breakdown;
 
@@ -113,44 +137,31 @@ export default function QADashboard() {
       <main className="mx-auto max-w-7xl px-6 py-8 space-y-6">
         <div>
           <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight">Test Coverage Overview</h2>
-          <p className="text-sm text-zinc-500 mt-1">Real-time analytics dashboard for test coverage, team performance, and mission-critical service monitoring across the entire engineering organization.</p>
+          <p className="text-sm text-zinc-500 mt-1">
+            Real-time analytics dashboard for test coverage, team performance, and mission-critical
+            service monitoring across the entire engineering organization.
+          </p>
         </div>
 
         {/* KPIs */}
         <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <KPI
-            icon={<UsersIcon />}
-            title="Teams"
-            value={data.teams}
-            tone="blue"
-          />
-          <KPI
-            icon={<TargetIcon />}
-            title="Features"
-            value={data.features}
-            tone="green"
-          />
-          <KPI
-            icon={<FlaskIcon />}
-            title="Services"
-            value={data.services}
-            tone="amber"
-          />
-          <KPI
-            icon={<TrendIcon />}
-            title="Avg Coverage"
-            value={`${coverage}%`}
-            tone="indigo"
-          />
+          <KPI icon={<UsersIcon />} title="Teams" value={data.teams} tone="blue" />
+          <KPI icon={<TargetIcon />} title="Features" value={data.features} tone="green" />
+          <KPI icon={<FlaskIcon />} title="Services" value={data.services} tone="amber" />
+          <KPI icon={<TrendIcon />} title="Avg Coverage" value={`${coverage}%`} tone="indigo" />
         </section>
 
         {/* Overall Test Distribution */}
         <section className="space-y-4">
           <div className="flex items-center gap-2">
-            <div className="w-5 h-5 grid place-items-center rounded-lg bg-zinc-100 dark:bg-zinc-800"><ArrowUpRightIcon /></div>
+            <div className="w-5 h-5 grid place-items-center rounded-lg bg-zinc-100 dark:bg-zinc-800">
+              <ArrowUpRightIcon />
+            </div>
             <h3 className="text-lg font-semibold tracking-tight">Overall Test Distribution</h3>
           </div>
-          <p className="text-sm text-zinc-500 -mt-2">Complete testing coverage breakdown across all components, integration, and end-to-end tests</p>
+          <p className="text-sm text-zinc-500 -mt-2">
+            Complete testing coverage breakdown across all components, integration, and end-to-end tests
+          </p>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             {/* Test Pyramid */}
@@ -159,10 +170,12 @@ export default function QADashboard() {
               <div className="space-y-6">
                 <div className="grid gap-2">
                   <div className="mx-auto">
-                    <span className="inline-flex items-center gap-2 text-sm font-medium text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-3 py-1 rounded-xl">E2E Tests <span className="opacity-60">{b.e2e.count} tests ({b.e2e.pct}%)</span></span>
+                    <span className="inline-flex items-center gap-2 text-sm font-medium text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-3 py-1 rounded-xl">
+                      E2E Tests <span className="opacity-60">{b.e2e.count} tests ({b.e2e.pct}%)</span>
+                    </span>
                   </div>
-                  <div className="h-10 rounded-xl bg-green-600/90 shadow-inner"></div>
-                  <div className="h-16 rounded-xl bg-blue-600/90 shadow-inner"></div>
+                  <div className="h-10 rounded-xl bg-green-600/90 shadow-inner" />
+                  <div className="h-16 rounded-xl bg-blue-600/90 shadow-inner" />
                 </div>
                 <div className="text-center text-3xl font-semibold">{data.totals.toLocaleString()}</div>
                 <div className="text-center text-sm text-zinc-500 -mt-3">Total Tests</div>
@@ -173,7 +186,9 @@ export default function QADashboard() {
             <Card>
               <h4 className="text-base font-semibold mb-4">Overall Test Coverage</h4>
               <div className="flex items-baseline gap-3">
-                <div className="text-4xl font-extrabold text-rose-600">{coverage.toFixed(1)}%</div>
+                <div className="text-4xl font-extrabold text-rose-600">
+                  {coverage.toFixed(1)}%
+                </div>
                 <div className="text-sm text-zinc-500">Overall Coverage</div>
               </div>
 
@@ -181,7 +196,9 @@ export default function QADashboard() {
                 <div>
                   <div className="mb-2 flex items-center justify-between text-sm">
                     <span className="text-zinc-600 dark:text-zinc-300">Component Tests</span>
-                    <span className="text-zinc-400">{b.component.count.toLocaleString()} ({b.component.pct}%)</span>
+                    <span className="text-zinc-400">
+                      {b.component.count.toLocaleString()} ({b.component.pct}%)
+                    </span>
                   </div>
                   <SegmentedBar
                     segments={[{ label: "Component", value: b.component.pct, className: "bg-blue-600" }]}
@@ -190,7 +207,9 @@ export default function QADashboard() {
                 <div>
                   <div className="mb-2 flex items-center justify-between text-sm">
                     <span className="text-zinc-600 dark:text-zinc-300">Integration Tests</span>
-                    <span className="text-zinc-400">{b.integration.count.toLocaleString()} ({b.integration.pct}%)</span>
+                    <span className="text-zinc-400">
+                      {b.integration.count.toLocaleString()} ({b.integration.pct}%)
+                    </span>
                   </div>
                   <SegmentedBar
                     segments={[{ label: "Integration", value: b.integration.pct, className: "bg-green-600" }]}
@@ -199,15 +218,17 @@ export default function QADashboard() {
                 <div>
                   <div className="mb-2 flex items-center justify-between text-sm">
                     <span className="text-zinc-600 dark:text-zinc-300">E2E Tests</span>
-                    <span className="text-zinc-400">{b.e2e.count.toLocaleString()} ({b.e2e.pct}%)</span>
+                    <span className="text-zinc-400">
+                      {b.e2e.count.toLocaleString()} ({b.e2e.pct}%)
+                    </span>
                   </div>
-                  <SegmentedBar
-                    segments={[{ label: "E2E", value: b.e2e.pct, className: "bg-amber-500" }]}
-                  />
+                  <SegmentedBar segments={[{ label: "E2E", value: b.e2e.pct, className: "bg-amber-500" }]} />
                 </div>
                 <div className="flex items-center justify-between text-sm text-zinc-500">
                   <span>Total Tests</span>
-                  <span className="font-medium text-zinc-700 dark:text-zinc-200">{data.totals.toLocaleString()}</span>
+                  <span className="font-medium text-zinc-700 dark:text-zinc-200">
+                    {data.totals.toLocaleString()}
+                  </span>
                 </div>
               </div>
 
@@ -222,7 +243,7 @@ export default function QADashboard() {
           </div>
         </section>
 
-        {/* Secondary grid (room for expansion) */}
+        {/* Secondary grid */}
         <section className="grid grid-cols-1 lg:grid-cols-3 gap-5">
           <Card className="lg:col-span-2">
             <h4 className="text-base font-semibold mb-2">Recent Activity</h4>
@@ -263,9 +284,9 @@ export default function QADashboard() {
   );
 }
 
-// ---------- Tiny Icon Set (inline SVG to avoid deps) ----------
-const UsersIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="1.75">
+// ---------- Tiny Icon Set ----------
+const UsersIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" {...props} fill="none" stroke="currentColor" strokeWidth="1.75" className={`w-6 h-6 ${props.className ?? ""}`}>
     <path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" />
     <circle cx="9" cy="7" r="4" />
     <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
@@ -273,8 +294,8 @@ const UsersIcon = () => (
   </svg>
 );
 
-const TargetIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="1.75">
+const TargetIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" {...props} fill="none" stroke="currentColor" strokeWidth="1.75" className={`w-6 h-6 ${props.className ?? ""}`}>
     <path d="M12 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" />
     <path d="M7.05 7.05a7 7 0 1 0 9.9 0" />
     <path d="M5 12a7 7 0 0 1 7-7" />
@@ -282,22 +303,22 @@ const TargetIcon = () => (
   </svg>
 );
 
-const FlaskIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="1.75">
+const FlaskIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" {...props} fill="none" stroke="currentColor" strokeWidth="1.75" className={`w-6 h-6 ${props.className ?? ""}`}>
     <path d="M10 2v6l-5 9a3 3 0 0 0 2.6 4.5h8.8A3 3 0 0 0 19 17l-5-9V2" />
     <path d="M8 6h8" />
   </svg>
 );
 
-const TrendIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="1.75">
+const TrendIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" {...props} fill="none" stroke="currentColor" strokeWidth="1.75" className={`w-6 h-6 ${props.className ?? ""}`}>
     <path d="M3 3v18h18" />
     <path d="M19 7l-6 6-3-3-4 4" />
   </svg>
 );
 
-const ArrowUpRightIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.75">
+const ArrowUpRightIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" {...props} fill="none" stroke="currentColor" strokeWidth="1.75" className={`w-4 h-4 ${props.className ?? ""}`}>
     <path d="M7 7h10v10" />
     <path d="M7 17 17 7" />
   </svg>
